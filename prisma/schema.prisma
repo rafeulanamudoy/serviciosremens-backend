@@ -1,0 +1,153 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  email            String           @unique
+  socialLoginType  SOCIALLOGINTYPES @default(EMAIL_PASSWORD)
+  fullName         String
+  phoneNumber      String?          @unique
+  role             UserRole         @default(TECHNICION)
+  password         String?          @default("")
+  status           UserStatus       @default(PENDING)
+  country          String?
+  city             String?
+  postalCode       String?
+  expertise        EXPERTISE[]
+  doc              String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  profileImage     String           @default("")
+  sentMessages     PrivateMessage[] @relation("SentMessages")
+  receivedMessages PrivateMessage[] @relation("ReceivedMessages")
+  user1Convarsion  Conversation[]   @relation("User1Convarsion")
+  user2Convarsion  Conversation[]   @relation("User2Convarsion")
+  admin            Admin?
+  Notifications    Notifications[]
+  fcmToken         String
+
+  @@map("users")
+}
+
+model Admin {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  nickName String @unique
+  password String
+  email    String @unique
+  userId   String @unique @db.ObjectId
+  user     User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Otp {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  phoneNumber String   @unique
+  otpCode     String   @unique
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("otps")
+}
+
+model PrivateMessage {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  senderId       String       @db.ObjectId
+  receiverId     String       @db.ObjectId
+  content        String?
+  imageUrl       String?
+  conversationId String       @db.ObjectId
+  read           Boolean      @default(false)
+  sender         User?        @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver       User?        @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  Conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("private_messages")
+}
+
+model Conversation {
+  id             String             @id @default(auto()) @map("_id") @db.ObjectId
+  user1Id        String             @db.ObjectId
+  user2Id        String             @db.ObjectId
+  lastMessage    String?
+  user1          User?              @relation("User1Convarsion", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2          User?              @relation("User2Convarsion", fields: [user2Id], references: [id], onDelete: Cascade)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  status         ConversationStatus @default(ACTIVE)
+  privateMessage PrivateMessage[]
+
+  @@unique([user1Id, user2Id])
+  @@map("conversations")
+}
+
+model Notifications {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  receiverId String   @db.ObjectId
+  body       String
+  title      String
+  user       User     @relation(fields: [receiverId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("notifications")
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+  PENDING
+}
+
+enum UserRole {
+  ADMIN
+  TECHNICION
+}
+
+enum BookingStatus {
+  WAITING
+  UPCOMING
+  PAST
+  CANCELLED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum ConversationStatus {
+  ACTIVE
+  DEACTIVE
+}
+
+enum SOCIALLOGINTYPES {
+  GOOGLE
+  EMAIL_PASSWORD
+}
+
+enum EXPERTISE {
+    KITCHEN
+  WATCHINE_MATCHINE
+  BELL
+  AIR_CONDITIONING
+  FRIDGE
+  ELECTRIC_WATER_HEATER
+  GAS_WATER_HEATER
+  QUICKIE
+  WASH_DRY
+  CAR_WASH_CENTER
+}
