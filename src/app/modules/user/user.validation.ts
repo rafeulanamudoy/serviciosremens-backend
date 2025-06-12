@@ -16,12 +16,18 @@ const userRegisterValidationSchema = z.object({
   country: z.string({ required_error: "country is required" }),
   city: z.string({ required_error: "city is required" }),
   postalCode: z.string({ required_error: "postal code is required" }),
-  expertise: z.array(z.enum(["KITCHEN", "WATCHINE_MATCHINE", "ELECTRICAL"])).min(1, "At least one expertise is required"),
+  expertise: z
+    .array(z.enum(["KITCHEN", "WATCHINE_MATCHINE", "ELECTRICAL"]))
+    .min(1, "At least one expertise is required"),
 
- 
- doc: fileSchema.refine(
+  doc: fileSchema.refine(
     (val) => {
-      const allowedMimetypes = ["image/jpeg", "image/png", "application/pdf"];
+      const allowedMimetypes = [
+        "image/jpeg",
+        "image/png",
+        "application/pdf",
+        "image/jpg",
+      ];
       return allowedMimetypes.includes(val.mimetype);
     },
     {
@@ -30,9 +36,9 @@ const userRegisterValidationSchema = z.object({
   ),
 });
 
-export const userValidation={
-  userRegisterValidationSchema
-}
+export const userValidation = {
+  userRegisterValidationSchema,
+};
 
 //import { z } from "zod";
 

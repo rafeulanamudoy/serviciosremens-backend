@@ -6,16 +6,18 @@ import validateRequest from "../../middlewares/validateRequest";
 import { localFileUploader } from "../../../helpers/localFileUploader";
 import { parseBodyData } from "../../middlewares/parseBodyData";
 import { injectFileIntoBody } from "../../middlewares/injectFile";
+// import { injectFileIntoBody } from "../../middlewares/injectFile";
 
 const router = express.Router();
 
 router.post(
   "/create",
    localFileUploader.doc,
+     parseBodyData,
    injectFileIntoBody("doc"),
  
  
-  parseBodyData,
+
 
   validateRequest(userValidation.userRegisterValidationSchema),
   userController.createUser

@@ -4,7 +4,7 @@ import { NextFunction, Request, Response } from "express";
 export const injectFileIntoBody = (fieldName: string) => {
   return (req: Request, res: Response, next: NextFunction) => {
     let file: Express.Multer.File | undefined;
-   console.log(req,"check req")
+
     if (req.file) {
       file = req.file;
     } else if (Array.isArray(req.files)) {
@@ -15,7 +15,7 @@ export const injectFileIntoBody = (fieldName: string) => {
       const filesByField = req.files as { [field: string]: Express.Multer.File[] };
       file = filesByField[fieldName]?.[0];
     }
-
+  console.log(req.file,"check req.file")
     if (!file) {
       return next(); 
     }
