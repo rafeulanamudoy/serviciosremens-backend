@@ -11,11 +11,12 @@ const router = express.Router();
 
 router.post(
   "/create",
-
-  localFileUploader.doc,
+   localFileUploader.doc,
+   injectFileIntoBody("doc"),
+ 
  
   parseBodyData,
-   injectFileIntoBody("doc"),
+
   validateRequest(userValidation.userRegisterValidationSchema),
   userController.createUser
 );
