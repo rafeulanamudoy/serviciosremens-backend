@@ -151,7 +151,7 @@ model jobCreate {
   id           String @id @default(auto()) @map("_id") @db.ObjectId
   customerName String
   location     Json
-
+   
   serviceName  EXPERTISE
   scheduleTime DateTime
   status       JobStutus @default(PENDING)
@@ -178,6 +178,8 @@ model rating {
 
   @@map("rating")
 }
+
+
 
 enum Rank {
   NONE
