@@ -27,4 +27,9 @@ router.get(
 
   adminAnalysisController.getAllTecnicion
 );
+router.patch(
+  "/update-status",
+  auth(UserRole.ADMIN),
+  adminAnalysisController.updateTechnicionStatus
+);
 export const adminRoute = router;

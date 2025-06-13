@@ -32,6 +32,8 @@ model User {
   Notifications          Notifications[]
   fcmToken               String?
   averageRating          Float                    @default(0)
+  jobCompletationRate   Float                    @default(0)
+  jobRejection          Int             @default(0)
   assignJobs             assignJobs[]
   technicionAvailability technicionAvailability[]
   totalJobComplete       Int                      @default(0)
@@ -165,6 +167,7 @@ model rating {
   address      String
   rating       Float
   technicionId String @db.ObjectId
+  comment        String 
   technicion   User   @relation(fields: [technicionId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())

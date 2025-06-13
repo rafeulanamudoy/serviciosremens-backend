@@ -43,9 +43,21 @@ const getAllTecnicion=catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const updateTechnicionStatus=catchAsync(async (req: Request, res: Response) => {
+   const {userId,status}=req.body
+ 
+  const result = await adminAnalysisService.updateTechnicionStatus(userId,status);
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: "user status updated successfully",
+    data: result,
+  });
+});
 export const adminAnalysisController = {
   createJob,
   adminLogin,
   asssignJob,
-  getAllTecnicion
+  getAllTecnicion,
+  updateTechnicionStatus
 };

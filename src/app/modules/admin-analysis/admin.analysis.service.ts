@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs";
 import httpStatus from "http-status";
 import { ConnectionCheckOutStartedEvent } from "mongodb";
 import searchAndPaginate from "../../../helpers/searchAndPaginate";
-import { User } from "@prisma/client";
+import { rating, User, UserStatus } from "@prisma/client";
 const adminLogin = async (payload: any) => {
   const user = await prisma.admin.findUnique({
     where: {
@@ -84,24 +84,69 @@ const getAllTecnicion = async (
     limit,
     searchQuery,
     additionalFilter,
-   {
-    fullName: true,
-    email: true,
-    rank:true,
-    totalJobComplete:true,
-    technicionAvailability:true
-  
-  }
-  
+    {
+      fullName: true,
+      email: true,
+      rank: true,
+      totalJobComplete: true,
+      technicionAvailability: true,
+      averageRating: true,
+      jobCompletationRate: true,
+      jobRejection: true,
+    }
   );
 
-  return  tecnicion
-  
-  
+  return tecnicion;
+};
+
+const updateTechnicionStatus = async (userId: string, status: UserStatus) => {
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { status },
+    });
+    return updatedUser;
+  } catch (error: any) {
+    if (error.code === "P2025") {
+      throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+    }
+    throw error;
+  }
+};
+
+const getFeedBack = async (
+  page: number = 1,
+  limit: number = 10,
+  searchQuery: string = ""
+) => {
+  const additionalFilter = {};
+  const tecnicion = await searchAndPaginate<rating>(
+    prisma.rating,
+    [],
+    page,
+    limit,
+    searchQuery,
+    additionalFilter,
+    {
+      name: true,
+      rating: true,
+      comment: true,
+
+      technicion: {
+        select: {
+          fullName: true,
+        },
+      },
+    }
+  );
+
+  return tecnicion;
 };
 export const adminAnalysisService = {
   adminLogin,
   createJob,
   assignJob,
   getAllTecnicion,
+  updateTechnicionStatus,
+  getFeedBack,
 };
