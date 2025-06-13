@@ -8,7 +8,7 @@ import { jwtHelpers } from "../../helpers/jwtHelpers";
 import ApiError from "../../errors/ApiErrors";
 import prisma from "../../shared/prisma";
 
-const auth = (...roles: string[]) => {
+const verifyOtpToken = (...roles: string[]) => {
   return async (
     req: Request & { user?: any },
     res: Response,
@@ -18,14 +18,14 @@ const auth = (...roles: string[]) => {
       const token = req.headers.authorization;
 
       if (!token) {
-        throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized!");
+        throw new ApiError(httpStatus.UNAUTHORIZED, " verify token needed");
       }
 
       const verifiedUser = jwtHelpers.verifyToken(
         token,
-        config.jwt.jwt_secret as Secret
+        config.otpSecret.verify_otp_secret as Secret
       );
-    
+
       const existingUser = await prisma.user.findUnique({
         where: { id: verifiedUser.id },
       });
@@ -47,4 +47,4 @@ const auth = (...roles: string[]) => {
   };
 };
 
-export default auth;
+export default verifyOtpToken;

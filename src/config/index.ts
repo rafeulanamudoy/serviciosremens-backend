@@ -44,7 +44,9 @@ export default {
     kkiapay_secret: process.env.KKIAPI_SECRET,
     webhook_url: process.env.KKIAPAY_WEBHOOK_URL,
   },
-  otpSecret:{
-    signup_otp_secret:process.env.SIGNUP_OTP_SECRET
-  }
+  otpSecret: {
+    signup_otp_secret: process.env.SIGNUP_OTP_SECRET,
+    verify_otp_secret: process.env.VERIFY_OTP_SECRET,
+    reset_password_secret: process.env.RESET_PASSWORD_SECRET,
+  },
 };

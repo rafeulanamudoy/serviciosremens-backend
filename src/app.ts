@@ -14,7 +14,7 @@ import {
   otpQueueEmail,
   otpQueuePhone,
 } from "./helpers/redis";
-import { paymentsService } from "./app/modules/payment/payment.service";
+
 const app: Application = express();
 const prisma = new PrismaClient();
 

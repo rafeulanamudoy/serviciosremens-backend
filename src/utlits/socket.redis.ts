@@ -1,23 +1,23 @@
 import { redis } from "../helpers/redis";
 import prisma from "../shared/prisma";
 
-const storeUserConnection = async (userId: string) => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      passenger: { select: { avater: true, fullName: true } },
-      driver: { select: { avater: true, fullName: true } },
-    },
-  });
-  if (!user) return;
-  const image = user?.passenger?.avater || user?.driver?.avater || " ";
-  const username = user?.passenger?.fullName || user?.driver?.fullName || " ";
+// const storeUserConnection = async (userId: string) => {
+//   const user = await prisma.user.findUnique({
+//     where: { id: userId },
+//     select: {
+//       passenger: { select: { avater: true, fullName: true } },
+//       driver: { select: { avater: true, fullName: true } },
+//     },
+//   });
+//   if (!user) return;
+//   const image = user?.passenger?.avater || user?.driver?.avater || " ";
+//   const username = user?.passenger?.fullName || user?.driver?.fullName || " ";
 
-  await redis.hmset(`user:${userId}`, {
-    username,
-    image,
-  });
-};
+//   await redis.hmset(`user:${userId}`, {
+//     username,
+//     image,
+//   });
+// };
 
 const getUserDetails = async (userId: string): Promise<any | null> => {
   const userDetails = await redis.hgetall(`user:${userId}`);
@@ -91,7 +91,7 @@ const getConversationList = async (
 };
 
 export const redisSocketService = {
-  storeUserConnection,
+
   getUserDetails,
   removeUserConnection,
   removeDriverLocationFromRedis,

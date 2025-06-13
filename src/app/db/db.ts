@@ -28,6 +28,7 @@ export const initiateSuperAdmin = async () => {
       phoneNumber: "1234567890",
       fullName:"admin",
       password: payload.password,
+      
       admin: {
         create: {
           id: payload.id,

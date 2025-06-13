@@ -1,11 +1,12 @@
 import { Worker, Queue } from "bullmq";
 import Redis, { RedisOptions } from "ioredis";
 import { sendMessage } from "./sendaMessage";
-import sendEmail from "./sendEmail";
+import sendEmail from "./sendEmailNodemailer";
 import { otpVerifyHtmlFormat } from "../utlits/html";
 import { chatService } from "../app/modules/chat/chat.service";
 import { activeUsers } from "../socket";
 import { MessageTypes } from "../utlits/socket.helpers";
+import { emailTemplate } from "./emailTemplate";
 
 // Redis Configuration
 const redisOptions: RedisOptions = {
@@ -35,7 +36,7 @@ const otpPhoneWorker = new Worker(
   "otp-queue-phone",
   async (job) => {
     const { phoneNumber, otpCode } = job.data;
-    const message = `Hi! Your Nanwaa - Ride Hailing App verification code is ${otpCode}. It’s valid for 10 minutes. Keep it safe and private!`;
+    const message = `Hi! your otp code is ${otpCode}. It’s valid for 5 minutes. Keep it safe and private!`;
     await sendMessage(phoneNumber, message);
     return "Otp end job completed";
   },
@@ -45,9 +46,10 @@ const otpPhoneWorker = new Worker(
 const otpEmailWorker = new Worker(
   "otp-queue-email",
   async (job) => {
-    const { email, otpCode, username } = job.data;
-    const html = await otpVerifyHtmlFormat(otpCode, username);
-    await sendEmail(email, "OTP Verification", html);
+    const { email, otpCode } = job.data;
+  
+
+    await emailTemplate.forgetPasswordOtpTemplate(email, otpCode);
 
     return "Otp end job completed";
   },

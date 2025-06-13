@@ -30,11 +30,14 @@ model User {
   user2Convarsion        Conversation[]           @relation("User2Convarsion")
   admin                  Admin?
   Notifications          Notifications[]
-  fcmToken               String
-  averageRating          Float @default(0)
+  fcmToken               String?
+  averageRating          Float                    @default(0)
   assignJobs             assignJobs[]
   technicionAvailability technicionAvailability[]
+  totalJobComplete       Int                      @default(0)
+  rank                   Rank                     @default(NONE)
   rating                 rating[]
+  Otp                    Otp[]
 
   @@map("users")
 }
@@ -54,12 +57,13 @@ model Admin {
 }
 
 model Otp {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  phoneNumber String   @unique
-  otpCode     String   @unique
-  expiresAt   DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @unique @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  otpCode   String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("otps")
 }
@@ -128,14 +132,31 @@ model technicionAvailability {
 model assignJobs {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  technicionId String    @db.ObjectId
-  technicion   User      @relation(fields: [technicionId], references: [id], onDelete: Cascade)
-  jobType      EXPERTISE
-  status       JobStutus @default(PENDING)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  technicionId String @db.ObjectId
+  technicion   User   @relation(fields: [technicionId], references: [id], onDelete: Cascade)
+
+  jobId String    @db.ObjectId
+  job   jobCreate @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  status    JobStutus @default(PENDING)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@map("assignJobs")
+}
+
+model jobCreate {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  customerName String
+  location     String
+
+  serviceName  EXPERTISE
+  scheduleTime DateTime
+  status       JobStutus @default(PENDING)
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  assignJobs assignJobs[]
 }
 
 model rating {
@@ -150,6 +171,16 @@ model rating {
   updatedAt DateTime @updatedAt
 
   @@map("rating")
+}
+
+
+enum Rank {
+  NONE
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
 }
 
 enum UserStatus {

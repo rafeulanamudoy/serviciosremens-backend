@@ -2,8 +2,7 @@ import Stripe from "stripe";
 import config from "../config";
 import catchAsync from "../shared/catchAsync";
 import sendResponse from "../shared/sendResponse";
-import { authService } from "../app/modules/auth/auth.service";
-import { paymentsService } from "../app/modules/payment/payment.service";
+
 
 const stripe = new Stripe(config.stripe.secretKey as string);
 

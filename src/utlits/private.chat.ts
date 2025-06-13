@@ -14,7 +14,7 @@ export const handleJoinApp = async (
 ): Promise<void> => {
   ws.userId = userId;
   activeUsers.set(userId, ws);
-  await redisSocketService.storeUserConnection(userId);
+  // await redisSocketService.storeUserConnection(userId);
   ws.send(
     JSON.stringify({
       type: MessageTypes.AUTH_SUCCESS,

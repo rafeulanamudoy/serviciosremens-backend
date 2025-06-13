@@ -8,7 +8,7 @@ import { jwtHelpers } from "../../helpers/jwtHelpers";
 import ApiError from "../../errors/ApiErrors";
 import prisma from "../../shared/prisma";
 
-const signUpVerify = (...roles: string[]) => {
+const resetVerifyToken = (...roles: string[]) => {
   return async (
     req: Request & { user?: any },
     res: Response,
@@ -18,15 +18,12 @@ const signUpVerify = (...roles: string[]) => {
       const token = req.headers.authorization;
 
       if (!token) {
-        throw new ApiError(
-          httpStatus.UNAUTHORIZED,
-          "signup verify token needed"
-        );
+        throw new ApiError(httpStatus.UNAUTHORIZED, "reset verify token needed");
       }
 
       const verifiedUser = jwtHelpers.verifyToken(
         token,
-        config.otpSecret.signup_otp_secret as Secret
+        config.otpSecret.reset_password_secret as Secret
       );
 
       const existingUser = await prisma.user.findUnique({
@@ -50,4 +47,4 @@ const signUpVerify = (...roles: string[]) => {
   };
 };
 
-export default signUpVerify;
+export default resetVerifyToken;
