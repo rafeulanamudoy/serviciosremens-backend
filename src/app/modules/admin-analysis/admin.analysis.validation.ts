@@ -1,6 +1,16 @@
 import { z } from "zod";
 import { expertiseEnum } from "../../../enum/expertiseEnum"; // assuming it's z.enum([...])
-
+const locationSchema = z.object({
+  lat: z
+    .number({ required_error: "Latitude is required" })
+    .min(-90, "Latitude must be >= -90")
+    .max(90, "Latitude must be <= 90"),
+  lng: z
+    .number({ required_error: "Longitude is required" })
+    .min(-180, "Longitude must be >= -180")
+    .max(180, "Longitude must be <= 180"),
+  address: z.string({ required_error: "Address is required" }).min(1, "Address cannot be empty"),
+});
 const jobCreateSchema = z.object({
   customerName: z.string({ required_error: "Customer name is required" }),
 
@@ -11,7 +21,7 @@ const jobCreateSchema = z.object({
     }
   ),
 
-  location: z.string({ required_error: "Location is required" }),
+  location: locationSchema,
 
   scheduleTime: z
     .string({ required_error: "Schedule time is required" })
