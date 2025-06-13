@@ -32,4 +32,9 @@ router.patch(
   auth(UserRole.ADMIN),
   adminAnalysisController.updateTechnicionStatus
 );
+router.get(
+  "/get-feedback",
+  auth(UserRole.ADMIN),
+  adminAnalysisController.getFeedBack
+);
 export const adminRoute = router;

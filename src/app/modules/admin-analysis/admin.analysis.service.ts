@@ -137,6 +137,11 @@ const getFeedBack = async (
           fullName: true,
         },
       },
+      job:{
+        select:{
+          serviceName:true
+        }
+      }
     }
   );
 

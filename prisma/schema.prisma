@@ -32,8 +32,8 @@ model User {
   Notifications          Notifications[]
   fcmToken               String?
   averageRating          Float                    @default(0)
-  jobCompletationRate   Float                    @default(0)
-  jobRejection          Int             @default(0)
+  jobCompletationRate    Float                    @default(0)
+  jobRejection           Int                      @default(0)
   assignJobs             assignJobs[]
   technicionAvailability technicionAvailability[]
   totalJobComplete       Int                      @default(0)
@@ -150,7 +150,7 @@ model assignJobs {
 model jobCreate {
   id           String @id @default(auto()) @map("_id") @db.ObjectId
   customerName String
-  location     String
+  location     Json
 
   serviceName  EXPERTISE
   scheduleTime DateTime
@@ -159,23 +159,25 @@ model jobCreate {
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
   assignJobs assignJobs[]
+  rating     rating[]
 }
 
 model rating {
-  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
   name         String
   address      String
   rating       Float
-  technicionId String @db.ObjectId
-  comment        String 
-  technicion   User   @relation(fields: [technicionId], references: [id], onDelete: Cascade)
+  technicionId String    @db.ObjectId
+  comment      String
+  technicion   User      @relation(fields: [technicionId], references: [id], onDelete: Cascade)
+  jobId        String    @db.ObjectId
+  job          jobCreate @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("rating")
 }
-
 
 enum Rank {
   NONE

@@ -5,6 +5,7 @@ const createRatingSchema = z.object({
   address: z.string({ required_error: "address is required" }),
   rating: z.number({ required_error: "rating is required" }),
   technicionId: z.string({ required_error: "technicionId is required" }),
+  jobId: z.string({ required_error: "jobid is required" }),
   comment: z.string({ required_error: "comment is required" }),
 });
 

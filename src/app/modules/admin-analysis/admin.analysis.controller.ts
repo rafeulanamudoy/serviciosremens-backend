@@ -54,10 +54,22 @@ const updateTechnicionStatus=catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getFeedBack=catchAsync(async (req: Request, res: Response) => {
+  
+ 
+  const result = await adminAnalysisService.getFeedBack();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "user feed back get successfully",
+    data: result,
+  });
+});
 export const adminAnalysisController = {
   createJob,
   adminLogin,
   asssignJob,
   getAllTecnicion,
-  updateTechnicionStatus
+  updateTechnicionStatus,
+  getFeedBack
 };
