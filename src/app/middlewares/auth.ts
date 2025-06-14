@@ -33,8 +33,9 @@ const auth = (...roles: string[]) => {
       if (!existingUser) {
         throw new ApiError(httpStatus.UNAUTHORIZED, "User not found!");
       }
-      req.user = verifiedUser;
-      if (roles.length && !roles.includes(verifiedUser.role)) {
+      req.user = existingUser;
+   
+      if (roles.length && !roles.includes(existingUser.role)) {
         throw new ApiError(
           httpStatus.FORBIDDEN,
           "Forbidden! You are not authorized"

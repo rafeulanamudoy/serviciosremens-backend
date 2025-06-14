@@ -15,7 +15,7 @@ export const injectFileIntoBody = (fieldName: string) => {
       const filesByField = req.files as { [field: string]: Express.Multer.File[] };
       file = filesByField[fieldName]?.[0];
     }
-  console.log(req.file,"check req.file")
+
     if (!file) {
       return next(); 
     }

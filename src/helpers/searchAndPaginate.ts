@@ -9,6 +9,7 @@ const searchAndPaginate = async <T>(
   additionalFilter: Prisma.Enumerable<Prisma.JsonObject> = {},
   selectFields?: any
 ) => {
+
   const skip = (page - 1) * limit;
   const searchFilter: Prisma.JsonObject = searchQuery
     ? {
@@ -24,12 +25,15 @@ const searchAndPaginate = async <T>(
       }
     : additionalFilter;
 
+
   const data = await model.findMany({
     where: searchFilter,
     skip,
     take: limit,
     orderBy: { createdAt: "desc" },
-    ...(selectFields && { select: selectFields }),
+    ...("select" in selectFields || "include" in selectFields
+      ? selectFields
+      : {}),
   });
 
   const total = await model.count({
@@ -37,14 +41,13 @@ const searchAndPaginate = async <T>(
   });
 
   return {
-   
     meta: {
       total,
       page,
       limit,
       totalPages: Math.ceil(total / limit),
     },
-     data,
+    data,
   };
 };
 

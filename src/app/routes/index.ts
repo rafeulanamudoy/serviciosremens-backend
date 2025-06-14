@@ -6,6 +6,7 @@ import { chatRoute } from "../modules/chat/chat.routes";
 import { adminRoute } from "../modules/admin-analysis/admin.analysis.routes";
 import { userRoute } from "../modules/user/user.routes";
 import { ratingRoute } from "../modules/rating/rating.route";
+import { jobRoute } from "../modules/job/job.route";
 
 const router = express.Router();
 
@@ -30,6 +31,10 @@ const moduleRoutes = [
   {
     path: "/rating",
     route: ratingRoute,
+  },
+  {
+    path: "/job",
+    route: jobRoute,
   },
 ];
 

@@ -111,7 +111,7 @@
                 "http://your-server-url.com/api/v1/kkiapi/payment-webhook", // REPLACE with your server URL
               currency: "usd",
             };
-            console.log(paymentData);
+           
             // Start Payment Process
             KKiaPay.pay(paymentData, function (response) {
               const message = document.getElementById("paymentMessage");

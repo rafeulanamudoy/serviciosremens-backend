@@ -7,7 +7,9 @@ import bcrypt from "bcryptjs";
 import httpStatus from "http-status";
 import { ConnectionCheckOutStartedEvent } from "mongodb";
 import searchAndPaginate from "../../../helpers/searchAndPaginate";
-import { rating, User, UserStatus } from "@prisma/client";
+import { jobCreate, JobStutus, rating, User, UserStatus } from "@prisma/client";
+import eventEmitter from "../../../sse/eventEmitter";
+
 const adminLogin = async (payload: any) => {
   const user = await prisma.admin.findUnique({
     where: {
@@ -44,6 +46,7 @@ const createJob = async (payload: any) => {
       ...payload,
     },
   });
+
   return data;
 };
 
@@ -67,6 +70,16 @@ const assignJob = async (payload: any) => {
     data: {
       ...payload,
     },
+  });
+
+  const date=new Date()
+  console.log(date,"check date")
+  console.log(date===payload.scheduleTime,"compare")
+
+  let status=date===payload.scheduleTime?"current":"upcoming"
+  eventEmitter.emit("event:technicion-job", {
+    userId: payload.technicionId,
+    status: status,
   });
   return data;
 };
@@ -137,15 +150,33 @@ const getFeedBack = async (
           fullName: true,
         },
       },
-      job:{
-        select:{
-          serviceName:true
-        }
-      }
+      job: {
+        select: {
+          serviceName: true,
+        },
+      },
     }
   );
 
   return tecnicion;
+};
+
+const getAllJobs = async (
+  page: number = 1,
+  limit: number = 10,
+  searchQuery: string = ""
+) => {
+  const additionalFilter = {};
+
+  const jobs = await searchAndPaginate<jobCreate>(
+    prisma.jobCreate,
+    [],
+    page,
+    limit,
+    searchQuery,
+    additionalFilter
+  );
+  return jobs;
 };
 export const adminAnalysisService = {
   adminLogin,
@@ -154,4 +185,5 @@ export const adminAnalysisService = {
   getAllTecnicion,
   updateTechnicionStatus,
   getFeedBack,
+  getAllJobs,
 };

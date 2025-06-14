@@ -9,15 +9,20 @@ const locationSchema = z.object({
     .number({ required_error: "Longitude is required" })
     .min(-180, "Longitude must be >= -180")
     .max(180, "Longitude must be <= 180"),
-  address: z.string({ required_error: "Address is required" }).min(1, "Address cannot be empty"),
+  address: z
+    .string({ required_error: "Address is required" })
+    .min(1, "Address cannot be empty"),
 });
 const jobCreateSchema = z.object({
   customerName: z.string({ required_error: "Customer name is required" }),
+  description: z.string({ required_error: "description is required" }),
 
   serviceName: expertiseEnum.refine(
     (val) => expertiseEnum.options.includes(val),
     {
-      message: "Invalid service type. Must be one of: " + expertiseEnum.options.join(", "),
+      message:
+        "Invalid service type. Must be one of: " +
+        expertiseEnum.options.join(", "),
     }
   ),
 
@@ -32,10 +37,7 @@ const jobCreateSchema = z.object({
 const assignJob = z.object({
   jobId: z.string({ required_error: "jobId is required" }),
 
-
-  technicionId: z.string({ required_error: "technicionId  is required" })
-
- 
+  technicionId: z.string({ required_error: "technicionId  is required" }),
 });
 export const adminValidation = {
   jobCreateSchema,

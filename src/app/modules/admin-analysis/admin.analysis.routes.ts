@@ -37,4 +37,9 @@ router.get(
   auth(UserRole.ADMIN),
   adminAnalysisController.getFeedBack
 );
+router.get(
+  "/get-all-jobs",
+  auth(UserRole.ADMIN),
+  adminAnalysisController.getAllJobs
+);
 export const adminRoute = router;

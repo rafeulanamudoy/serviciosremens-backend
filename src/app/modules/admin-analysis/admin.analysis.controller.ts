@@ -34,7 +34,7 @@ const asssignJob=catchAsync(async (req: Request, res: Response) => {
   });
 });
 const getAllTecnicion=catchAsync(async (req: Request, res: Response) => {
- 
+
   const result = await adminAnalysisService.getAllTecnicion();
   sendResponse(res, {
     statusCode: 201,
@@ -56,12 +56,30 @@ const updateTechnicionStatus=catchAsync(async (req: Request, res: Response) => {
 });
 const getFeedBack=catchAsync(async (req: Request, res: Response) => {
   
- 
-  const result = await adminAnalysisService.getFeedBack();
+  let { page = 1, limit = 10, status } = req.query;
+  page = Number(page);
+  limit = Number(limit);
+  const result = await adminAnalysisService.getFeedBack(page,limit);
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: "user feed back get successfully",
+    data: result,
+  });
+});
+
+const getAllJobs=catchAsync(async (req: Request, res: Response) => {
+  
+  let { page = 1, limit = 10, status } = req.query;
+  page = Number(page);
+  limit = Number(limit);
+
+  console.log(page,limit)
+  const result = await adminAnalysisService.getAllJobs(page,limit);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "all job get successfully",
     data: result,
   });
 });
@@ -71,5 +89,6 @@ export const adminAnalysisController = {
   asssignJob,
   getAllTecnicion,
   updateTechnicionStatus,
-  getFeedBack
+  getFeedBack,
+  getAllJobs
 };
