@@ -25,7 +25,6 @@ const searchAndPaginate = async <T>(
       }
     : additionalFilter;
 
-
   const data = await model.findMany({
     where: searchFilter,
     skip,

@@ -34,10 +34,16 @@ const jobCreateSchema = z.object({
       message: "Invalid ISO date format",
     }),
 });
+
 const assignJob = z.object({
   jobId: z.string({ required_error: "jobId is required" }),
 
-  technicionId: z.string({ required_error: "technicionId  is required" }),
+  technicionId: z
+    .array(z.string({ required_error: "Each technicionId must be a string" }), {
+      required_error:
+        "technicionId is required and must be an array of strings",
+    })
+    .min(1, { message: "At least one technicionId is required" }),
 });
 export const adminValidation = {
   jobCreateSchema,

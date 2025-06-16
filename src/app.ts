@@ -10,6 +10,7 @@ import { ExpressAdapter } from "@bull-board/express";
 import { createBullBoard } from "@bull-board/api";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import {
+  assignJobQueue,
   conversationListQueue,
   otpQueueEmail,
   otpQueuePhone,
@@ -62,6 +63,7 @@ createBullBoard({
     new BullMQAdapter(otpQueueEmail),
     new BullMQAdapter(otpQueuePhone),
     new BullMQAdapter(conversationListQueue),
+    new BullMQAdapter(assignJobQueue)
   ],
   serverAdapter,
 });

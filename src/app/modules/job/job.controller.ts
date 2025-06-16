@@ -1,18 +1,18 @@
 import { Response, Request } from "express";
 import catchAsync from "../../../shared/catchAsync";
 
-import sendResponse from "../../../shared/sendResponse";
+
 import { jobService } from "./job.service";
 
-import { JobStutus } from "@prisma/client";
+
 import eventEmitter from "../../../sse/eventEmitter";
 import { sseConnections } from "../../../sse/sseUser";
-import { ConnectionCheckOutStartedEvent } from "mongodb";
+
 
 const getTechnicionJob = catchAsync(async (req: Request, res: Response) => {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Catche-Control", "no-cache");
-  res.setHeader("Connection", "keep-aliver");
+  res.setHeader("Connection", "keep-alive");
   res.flushHeaders();
   if (!sseConnections[req.user.id]) {
     sseConnections[req.user.id] = [];
@@ -41,6 +41,7 @@ const getTechnicionJob = catchAsync(async (req: Request, res: Response) => {
         );
         res.write(`event:technicion-job\ndata: ${JSON.stringify(result)}\n\n`);
       } catch (error) {
+        // console.log(error,"check error")
         res.write(
           `event: error\ndata: ${JSON.stringify({
             message: "Failed to fetch job data",
@@ -57,6 +58,7 @@ const getTechnicionJob = catchAsync(async (req: Request, res: Response) => {
       status: string;
     }) => {
       if (targetUserId === req.user.id) {
+         console.log(status,"check status from event handler")
         await sendData(status);
       }
     };

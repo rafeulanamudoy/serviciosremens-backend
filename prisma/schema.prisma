@@ -136,9 +136,10 @@ model assignJobs {
 
   technicionId String @db.ObjectId
   technicion   User   @relation(fields: [technicionId], references: [id], onDelete: Cascade)
-
+  
   jobId String    @db.ObjectId
   job   jobCreate @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  expireAt DateTime?
 
   status    JobStutus @default(PENDING)
   createdAt DateTime  @default(now())
@@ -148,18 +149,18 @@ model assignJobs {
 }
 
 model jobCreate {
-  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
   customerName String
   location     Json
   description  String
   serviceName  EXPERTISE
   scheduleTime DateTime
-  status       JobStutus @default(PENDING)
-
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  assignJobs assignJobs[]
-  rating     rating[]
+  status       JobStutus    @default(PENDING)
+ 
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  assignJobs   assignJobs[]
+  rating       rating[]
 }
 
 model rating {
@@ -178,8 +179,6 @@ model rating {
 
   @@map("rating")
 }
-
-
 
 enum Rank {
   NONE

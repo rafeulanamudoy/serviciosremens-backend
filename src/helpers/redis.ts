@@ -7,6 +7,7 @@ import { chatService } from "../app/modules/chat/chat.service";
 import { activeUsers } from "../socket";
 import { MessageTypes } from "../utlits/socket.helpers";
 import { emailTemplate } from "./emailTemplate";
+import { jobService } from "../app/modules/job/job.service";
 
 // Redis Configuration
 const redisOptions: RedisOptions = {
@@ -28,10 +29,22 @@ redis.on("error", (err: any) => console.error("❌ Redis error:", err));
 
 const otpQueuePhone = new Queue("otp-queue-phone", { connection: redis });
 const otpQueueEmail = new Queue("otp-queue-email", { connection: redis });
+
 const conversationListQueue = new Queue("conversationList", {
   connection: redis,
 });
+const assignJobQueue = new Queue("assign-job-queue", { connection: redis });
 
+const assignJobWorker = new Worker(
+  "assign-job-queue",
+  async (job) => {
+    const { jobId } = job.data;
+
+    const result = await jobService.removedeclineJobs(jobId);
+    console.log(result, "check result");
+  },
+  { connection: redis }
+);
 const otpPhoneWorker = new Worker(
   "otp-queue-phone",
   async (job) => {
@@ -47,7 +60,6 @@ const otpEmailWorker = new Worker(
   "otp-queue-email",
   async (job) => {
     const { email, otpCode } = job.data;
-  
 
     await emailTemplate.forgetPasswordOtpTemplate(email, otpCode);
 
@@ -112,6 +124,12 @@ conversationListWorker.on("completed", (job) => {
 conversationListWorker.on("failed", (job, err) => {
   console.error(`❌ ConversationList job failed: ${job?.id}`, err);
 });
+assignJobWorker.on("completed", (job) => {
+  console.log(`✅ OTP job completed: ${job.id}`);
+});
+assignJobWorker.on("completed", (job, err) => {
+  console.error(`❌ ConversationList job failed: ${job?.id}`, err);
+});
 export async function cleanQueues() {
   await Promise.all([
     otpQueueEmail.clean(0, 1000, "completed"),
@@ -128,6 +146,10 @@ export async function cleanQueues() {
     otpQueuePhone.clean(0, 1000, "failed"),
     otpQueuePhone.clean(0, 1000, "delayed"),
     otpQueuePhone.clean(0, 1000, "wait"),
+    assignJobQueue.clean(0, 1000, "completed"),
+    assignJobQueue.clean(0, 1000, "failed"),
+    assignJobQueue.clean(0, 1000, "delayed"),
+    assignJobQueue.clean(0, 1000, "wait"),
   ]);
 }
 async function handleJobFailure(job: any, err: any) {
@@ -143,6 +165,7 @@ otpPhoneWorker.on("failed", handleJobFailure);
 otpEmailWorker.on("failed", handleJobFailure);
 
 conversationListWorker.on("failed", handleJobFailure);
+assignJobWorker.on("failed", handleJobFailure);
 // Run cleanup at startup
 cleanQueues().catch((err) => console.error("❌ Error cleaning queues:", err));
 // Graceful shutdown
@@ -153,6 +176,7 @@ process.on("SIGINT", async () => {
   await otpEmailWorker.close();
   await conversationListQueue.close();
   await conversationListWorker.close();
+  await assignJobWorker.close();
   console.log("✅ Workers and Queues closed gracefully");
   process.exit(0);
 });
@@ -163,4 +187,5 @@ export {
   otpPhoneWorker,
   otpEmailWorker,
   conversationListQueue,
+  assignJobQueue,
 };

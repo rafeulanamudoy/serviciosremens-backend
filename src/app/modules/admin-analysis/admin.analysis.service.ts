@@ -9,6 +9,7 @@ import { ConnectionCheckOutStartedEvent } from "mongodb";
 import searchAndPaginate from "../../../helpers/searchAndPaginate";
 import { jobCreate, JobStutus, rating, User, UserStatus } from "@prisma/client";
 import eventEmitter from "../../../sse/eventEmitter";
+import { assignJobQueue } from "../../../helpers/redis";
 
 const adminLogin = async (payload: any) => {
   const user = await prisma.admin.findUnique({
@@ -51,36 +52,63 @@ const createJob = async (payload: any) => {
 };
 
 const assignJob = async (payload: any) => {
-  const [isJob, isTechnicion] = await Promise.all([
-    await prisma.jobCreate.findUnique({
+  const [isJob, technicions] = await Promise.all([
+    prisma.jobCreate.findUnique({
       where: {
         id: payload.jobId,
       },
     }),
-    await prisma.user.findUnique({
+    prisma.user.findMany({
       where: {
-        id: payload.technicionId,
+        id: {
+          in: payload.technicionId,
+        },
       },
     }),
   ]);
-  if (!isJob || !isTechnicion) {
-    throw new ApiError(httpStatus.NOT_FOUND, "job or tecnicion not found");
+
+  if (!isJob || technicions.length === 0) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Job or Technicians not found");
   }
-  const data = await prisma.assignJobs.create({
-    data: {
-      ...payload,
+
+  const data = await prisma.assignJobs.createMany({
+    data: payload.technicionId.map((technicionId: string) => ({
+      jobId: payload.jobId,
+      technicionId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })),
+  });
+
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+
+  const jobDate = new Date(isJob.scheduleTime);
+  jobDate.setHours(0, 0, 0, 0);
+
+  let status = date.getTime() === jobDate.getTime() ? "current" : "upcoming";
+
+  payload.technicionId.forEach((id: string) => {
+    eventEmitter.emit("event:technicion-job", {
+      userId: id,
+      status,
+    });
+  });
+  await assignJobQueue.add(
+    "assign-job",
+    {
+      jobId: payload.jobId,
+      technicionIds: payload.technicionId,
     },
-  });
-
-  const date=new Date()
-  console.log(date,"check date")
-  console.log(date===payload.scheduleTime,"compare")
-
-  let status=date===payload.scheduleTime?"current":"upcoming"
-  eventEmitter.emit("event:technicion-job", {
-    userId: payload.technicionId,
-    status: status,
-  });
+    {
+      jobId: `assign-delay-${payload.jobId}`,
+      delay: 1000 * 60 * 1,
+      removeOnComplete: true,
+      removeOnFail: true,
+    },
+    
+ 
+  );
   return data;
 };
 
