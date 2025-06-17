@@ -74,15 +74,48 @@ const updateAssignJobStatus = async (
   userId: string
 ) => {
   try {
+    let result;
 
-    const result=await prisma.assignJobs.update({
-      where:{
-        id:id
-      },
-      data:{
-        status:status
+    if (status === JobStutus.ACCEPT) {
+      const isAccept = await prisma.assignJobs.findUnique({
+        where: {
+          id:id
+        },
+        include:{
+          job:true
+        }
+      });
+      if (isAccept?.job.status===JobStutus.ACCEPT) {
+        throw new ApiError(
+          httpStatus.NOT_ACCEPTABLE,
+          "this job is already accpeted by another technicion"
+        );
       }
-    })
+
+      const result = await prisma.assignJobs.update({
+        where: {
+          id: id,
+        },
+        data: {
+          status: status,
+          job: {
+            update: {
+              status: status,
+            },
+          },
+        },
+      });
+      return result;
+    } else if (status === JobStutus.DECLINE) {
+      result = await prisma.assignJobs.update({
+        where: {
+          id: id,
+        },
+        data: {
+          status: status,
+        },
+      });
+    }
   } catch (error: any) {
     if (error.code === "P2025") {
       throw new ApiError(httpStatus.NOT_FOUND, "job not found");
