@@ -70,11 +70,13 @@ const assignJob = async (payload: any) => {
   if (!isJob || technicions.length === 0) {
     throw new ApiError(httpStatus.NOT_FOUND, "Job or Technicians not found");
   }
-
+    const now = new Date();
+   const expireAt = new Date(now.getTime() + 5 * 60 * 1000);
   const data = await prisma.assignJobs.createMany({
     data: payload.technicionId.map((technicionId: string) => ({
       jobId: payload.jobId,
       technicionId,
+      expireAt:expireAt,
       createdAt: new Date(),
       updatedAt: new Date(),
     })),
@@ -102,7 +104,7 @@ const assignJob = async (payload: any) => {
     },
     {
       jobId: `assign-delay-${payload.jobId}`,
-      delay: 1000 * 60 * 1,
+      delay: 1000 * 60 * 5,
       removeOnComplete: true,
       removeOnFail: true,
     },

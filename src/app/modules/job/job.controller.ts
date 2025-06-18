@@ -1,13 +1,11 @@
 import { Response, Request } from "express";
 import catchAsync from "../../../shared/catchAsync";
 
-
 import { jobService } from "./job.service";
-
 
 import eventEmitter from "../../../sse/eventEmitter";
 import { sseConnections } from "../../../sse/sseUser";
-
+import sendResponse from "../../../shared/sendResponse";
 
 const getTechnicionJob = catchAsync(async (req: Request, res: Response) => {
   res.setHeader("Content-Type", "text/event-stream");
@@ -30,7 +28,7 @@ const getTechnicionJob = catchAsync(async (req: Request, res: Response) => {
     page = Number(page);
     limit = Number(limit);
 
-    const sendData = async (status: string ="current") => {
+    const sendData = async (status: string = "current") => {
       try {
         const result = await jobService.getTechnicionJob(
           userId,
@@ -58,7 +56,7 @@ const getTechnicionJob = catchAsync(async (req: Request, res: Response) => {
       status: string;
     }) => {
       if (targetUserId === req.user.id) {
-         console.log(status,"check status from event handler")
+        console.log(status, "check status from event handler");
         await sendData(status);
       }
     };
@@ -82,9 +80,25 @@ const getTechnicionJob = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
-
-
+const updateAssignJobStatus = catchAsync(
+  async (req: Request, res: Response) => {
+    const { status, assignJobId } = req.body;
+    const userId = req.user.id;
+    const result = await jobService.updateAssignJobStatus(
+      status,
+      assignJobId,
+      userId
+    );
+    sendResponse(res, {
+      statusCode: 201,
+      success: true,
+      message: "job update successfully",
+      data: result,
+    });
+  }
+);
 
 export const jobController = {
   getTechnicionJob,
+  updateAssignJobStatus,
 };

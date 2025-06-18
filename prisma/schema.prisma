@@ -40,7 +40,7 @@ model User {
   rank                   Rank                     @default(NONE)
   rating                 rating[]
   Otp                    Otp[]
- 
+  jobCreate              jobCreate[]
 
   @@map("users")
 }
@@ -150,14 +150,16 @@ model assignJobs {
 }
 
 model jobCreate {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  customerName      String
-  location          Json
-  description       String
-  serviceName       EXPERTISE
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  customerName        String
+  location            Json
+  description         String
+  serviceName         EXPERTISE
+  acceptTechnicionId  String?   @db.ObjectId
+  accepetedTechnicion User?     @relation(fields: [acceptTechnicionId], references: [id], onDelete: Cascade)
 
-  scheduleTime      DateTime
-  status            JobStutus @default(PENDING)
+  scheduleTime DateTime
+  status       JobStutus @default(PENDING)
 
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
@@ -210,7 +212,7 @@ enum JobStutus {
   CANCELLED
   DECLINE
   ACCEPT
-  }
+}
 
 enum BookingStatus {
   WAITING

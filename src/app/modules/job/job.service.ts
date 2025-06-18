@@ -46,9 +46,12 @@ const getTechnicionJob = async (
     additionalFilter,
     {
       select: {
+        id:true,
         job: {
           select: {
+            id: true,
             customerName: true,
+
             serviceName: true,
             location: true,
             scheduleTime: true,
@@ -71,7 +74,7 @@ const getTechnicionJob = async (
 const updateAssignJobStatus = async (
   status: JobStutus,
   id: string,
-  userId: string
+  technicionId: string
 ) => {
   try {
     let result;
@@ -79,13 +82,13 @@ const updateAssignJobStatus = async (
     if (status === JobStutus.ACCEPT) {
       const isAccept = await prisma.assignJobs.findUnique({
         where: {
-          id:id
+          id: id,
         },
-        include:{
-          job:true
-        }
+        include: {
+          job: true,
+        },
       });
-      if (isAccept?.job.status===JobStutus.ACCEPT) {
+      if (isAccept?.job.status === JobStutus.ACCEPT) {
         throw new ApiError(
           httpStatus.NOT_ACCEPTABLE,
           "this job is already accpeted by another technicion"
@@ -101,6 +104,7 @@ const updateAssignJobStatus = async (
           job: {
             update: {
               status: status,
+              acceptTechnicionId: technicionId,
             },
           },
         },
