@@ -7,78 +7,80 @@ import eventEmitter from "../../../sse/eventEmitter";
 import { sseConnections } from "../../../sse/sseUser";
 import sendResponse from "../../../shared/sendResponse";
 
-const getTechnicionJob = catchAsync(async (req: Request, res: Response) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Catche-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-  res.flushHeaders();
-  if (!sseConnections[req.user.id]) {
-    sseConnections[req.user.id] = [];
+const getTechnicionIncomingJob = catchAsync(
+  async (req: Request, res: Response) => {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Catche-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+    if (!sseConnections[req.user.id]) {
+      sseConnections[req.user.id] = [];
+    }
+
+    sseConnections[req.user.id].push(res);
+
+    res.write(`event: connected\ndata:"SSE connected \n\n`);
+
+    try {
+      const userId = req.user.id;
+
+      let { page = 1, limit = 10 } = req.query;
+
+      page = Number(page);
+      limit = Number(limit);
+
+      const sendData = async (status: string = "incoming") => {
+        try {
+          const result = await jobService.getIncomingJob(
+            userId,
+            page,
+            limit,
+            ""
+          );
+          res.write(
+            `event:technicion-job\ndata: ${JSON.stringify(result)}\n\n`
+          );
+        } catch (error) {
+          // console.log(error,"check error")
+          res.write(
+            `event: error\ndata: ${JSON.stringify({
+              message: "Failed to fetch job data",
+            })}\n\n`
+          );
+        }
+      };
+      await sendData("incoming" as string);
+      const eventHandler = async ({
+        userId: targetUserId,
+      }: {
+        userId: string;
+      }) => {
+        if (targetUserId === req.user.id) {
+          console.log(status, "check status from event handler");
+          await sendData(status);
+        }
+      };
+      eventEmitter.on("event:technicion-job", eventHandler);
+
+      const heartbeat = setInterval(() => {
+        res.write(`:\n\n`);
+      }, 300 * 1000);
+
+      req.on("close", () => {
+        clearInterval(heartbeat);
+        eventEmitter.off("event:technicion-job", eventHandler);
+        sseConnections[req.user.id] = [];
+        res.end();
+      });
+    } catch (error) {
+      res.write(
+        `event: error\ndata: ${JSON.stringify({
+          message: "Unexpected SSE error",
+        })}\n\n`
+      );
+    }
   }
-
-  sseConnections[req.user.id].push(res);
-
-  res.write(`event: connected\ndata:"SSE connected \n\n`);
-
-  try {
-    const userId = req.user.id;
-
-    let { page = 1, limit = 10, status } = req.query;
-
-    page = Number(page);
-    limit = Number(limit);
-
-    const sendData = async (status: string = "current") => {
-      try {
-        const result = await jobService.getTechnicionJob(
-          userId,
-          page,
-          limit,
-          "",
-          status as string
-        );
-        res.write(`event:technicion-job\ndata: ${JSON.stringify(result)}\n\n`);
-      } catch (error) {
-        // console.log(error,"check error")
-        res.write(
-          `event: error\ndata: ${JSON.stringify({
-            message: "Failed to fetch job data",
-          })}\n\n`
-        );
-      }
-    };
-    await sendData(status as string);
-    const eventHandler = async ({
-      userId: targetUserId,
-      status,
-    }: {
-      userId: string;
-      status: string;
-    }) => {
-      if (targetUserId === req.user.id) {
-        console.log(status, "check status from event handler");
-        await sendData(status);
-      }
-    };
-    eventEmitter.on("event:technicion-job", eventHandler);
-
-    const heartbeat = setInterval(() => {
-      res.write(`:\n\n`);
-    }, 300 * 1000);
-
-    req.on("close", () => {
-      clearInterval(heartbeat);
-      eventEmitter.off("event:technicion-job", eventHandler);
-      res.end();
-    });
-  } catch (error) {
-    res.write(
-      `event: error\ndata: ${JSON.stringify({
-        message: "Unexpected SSE error",
-      })}\n\n`
-    );
-  }
-});
+);
 
 const updateAssignJobStatus = catchAsync(
   async (req: Request, res: Response) => {
@@ -99,6 +101,6 @@ const updateAssignJobStatus = catchAsync(
 );
 
 export const jobController = {
-  getTechnicionJob,
+  getTechnicionIncomingJob,
   updateAssignJobStatus,
 };

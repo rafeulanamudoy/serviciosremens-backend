@@ -6,6 +6,6 @@ import auth from "../../middlewares/auth";
 
 const router = express.Router();
 
-router.get("/get-technicion-job", auth(), jobController.getTechnicionJob);
+router.get("/get-technicion-incoming-job", auth(), jobController.getTechnicionIncomingJob);
 router.patch("/update-job-status", auth(), jobController.updateAssignJobStatus);
 export const jobRoute = router;

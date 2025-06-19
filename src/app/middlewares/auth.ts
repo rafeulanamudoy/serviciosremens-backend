@@ -18,6 +18,19 @@ const auth = (...roles: string[]) => {
       const token = req.headers.authorization;
 
       if (!token) {
+        if (req.headers.accept === "text/event-stream") {
+          res.writeHead(httpStatus.UNAUTHORIZED, {
+            "Content-Type": "text/event-stream",
+            Connection: "close",
+          });
+          res.write(
+            `event: error\ndata: ${JSON.stringify({
+              message: "User not found!",
+            })}\n\n`
+          );
+          res.end();
+          return;
+        }
         throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized!");
       }
 
@@ -25,16 +38,31 @@ const auth = (...roles: string[]) => {
         token,
         config.jwt.jwt_secret as Secret
       );
-    
+
       const existingUser = await prisma.user.findUnique({
         where: { id: verifiedUser.id },
       });
 
       if (!existingUser) {
+        if (req.headers.accept === "text/event-stream") {
+          res.writeHead(httpStatus.UNAUTHORIZED, {
+            "Content-Type": "text/event-stream",
+            Connection: "close",
+          });
+          res.write(
+            `event: error\ndata: ${JSON.stringify({
+              message: "User not found!",
+            })}\n\n`
+          );
+          res.end();
+          return;
+        }
+
         throw new ApiError(httpStatus.UNAUTHORIZED, "User not found!");
       }
+
       req.user = existingUser;
-   
+
       if (roles.length && !roles.includes(existingUser.role)) {
         throw new ApiError(
           httpStatus.FORBIDDEN,

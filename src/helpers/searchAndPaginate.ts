@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { ConnectionCheckOutStartedEvent } from "mongodb";
 
 const searchAndPaginate = async <T>(
   model: any,
@@ -24,7 +25,8 @@ const searchAndPaginate = async <T>(
           : additionalFilter),
       }
     : additionalFilter;
-
+  
+   console.log(searchFilter,"search filter")
   const data = await model.findMany({
     where: searchFilter,
     skip,

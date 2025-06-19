@@ -10,6 +10,7 @@ import searchAndPaginate from "../../../helpers/searchAndPaginate";
 import { jobCreate, JobStutus, rating, User, UserStatus } from "@prisma/client";
 import eventEmitter from "../../../sse/eventEmitter";
 import { assignJobQueue } from "../../../helpers/redis";
+import { notificationServices } from "../notifications/notification.service";
 
 const adminLogin = async (payload: any) => {
   const user = await prisma.admin.findUnique({
@@ -70,17 +71,20 @@ const assignJob = async (payload: any) => {
   if (!isJob || technicions.length === 0) {
     throw new ApiError(httpStatus.NOT_FOUND, "Job or Technicians not found");
   }
-    const now = new Date();
-   const expireAt = new Date(now.getTime() + 5 * 60 * 1000);
+  const now = new Date();
+  const expireAt = new Date(now.getTime() + 5 * 60 * 1000);
   const data = await prisma.assignJobs.createMany({
     data: payload.technicionId.map((technicionId: string) => ({
       jobId: payload.jobId,
       technicionId,
-      expireAt:expireAt,
+      expireAt: expireAt,
       createdAt: new Date(),
       updatedAt: new Date(),
     })),
   });
+
+
+  console.log(data,"chck assign job data")
 
   const date = new Date();
   date.setHours(0, 0, 0, 0);
@@ -88,29 +92,35 @@ const assignJob = async (payload: any) => {
   const jobDate = new Date(isJob.scheduleTime);
   jobDate.setHours(0, 0, 0, 0);
 
-  let status = date.getTime() === jobDate.getTime() ? "current" : "upcoming";
-
+  // let status = date.getTime() === jobDate.getTime() ? "current" : "upcoming";
+  let status = "incoming";
   payload.technicionId.forEach((id: string) => {
     eventEmitter.emit("event:technicion-job", {
       userId: id,
       status,
     });
   });
-  await assignJobQueue.add(
-    "assign-job",
-    {
-      jobId: payload.jobId,
-      technicionIds: payload.technicionId,
-    },
-    {
-      jobId: `assign-delay-${payload.jobId}`,
-      delay: 1000 * 60 * 5,
-      removeOnComplete: true,
-      removeOnFail: true,
-    },
-    
- 
+  // assignJobQueue.add(
+  //   "assign-job",
+  //   {
+  //     jobId: payload.jobId,
+  //     technicionIds: payload.technicionId,
+  //   },
+  //   {
+  //     jobId: `assign-delay-${payload.jobId}`,
+  //     delay: 1000 * 60 * 5,
+  //     removeOnComplete: true,
+  //     removeOnFail: true,
+  //   }
+  // );
+  const title = "you got new asssign job from admin";
+  const body = {};
+  const result = await notificationServices.sendMultipulNotifications(
+    "new assign job from admin",
+    "new Assign job from admin",
+    payload.technicionId
   );
+  console.log(result, "check notificaiton");
   return data;
 };
 

@@ -24,10 +24,16 @@ const getTechnicionJob = async (
 
   if (status === "current") {
     additionalFilter.job = {
+      acceptTechnicionId: userId,
+      status: JobStutus.ACCEPT,
       scheduleTime: {
         gte: todayStart,
         lte: todayEnd,
       },
+    };
+  } else if (status === "incoming") {
+    additionalFilter = {
+      status: JobStutus.PENDING,
     };
   } else if (status === "upcoming") {
     additionalFilter.job = {
@@ -35,8 +41,19 @@ const getTechnicionJob = async (
         gt: todayEnd,
       },
     };
+  } else if (status === "complete") {
+    additionalFilter.job = {
+      status: JobStutus.COMPLETE,
+    };
+  } else if (status === "decline") {
+    additionalFilter = {
+      status: JobStutus.DECLINE,
+    };
+  } else if (status === "pending") {
+    additionalFilter = {
+      status: JobStutus.DECLINE,
+    };
   }
-
   const data = await searchAndPaginate<assignJobs>(
     prisma.assignJobs,
     [],
@@ -46,7 +63,7 @@ const getTechnicionJob = async (
     additionalFilter,
     {
       select: {
-        id:true,
+        id: true,
         job: {
           select: {
             id: true,
@@ -92,6 +109,11 @@ const updateAssignJobStatus = async (
         throw new ApiError(
           httpStatus.NOT_ACCEPTABLE,
           "this job is already accpeted by another technicion"
+        );
+      } else if (isAccept?.expireAt && new Date() > isAccept.expireAt) {
+        throw new ApiError(
+          httpStatus.NOT_ACCEPTABLE,
+          "your job is expired .you cannot accept now"
         );
       }
 
@@ -140,8 +162,71 @@ const removedeclineJobs = async (jobId: string) => {
   return result;
 };
 
+// const technicionHistory = async (
+//   page: number = 1,
+//   limit: number = 10,
+//   searchQuery: string = "",
+//   status: string
+// ) => {
+//   const additionalFilter = {};
+//   const result = await searchAndPaginate<assignJobs>(
+//     prisma.assignJobs,
+//     [],
+//     page,
+//     limit,
+//     searchQuery,
+//     additionalFilter
+//   );
+// };
+
+const getIncomingJob = async (
+  userId: string,
+  page: number = 1,
+  limit: number = 10,
+  searchQuery: string = ""
+) => {
+  const additionalFilter: any = {
+    technicionId: userId,
+    status: JobStutus.PENDING,
+  };
+  const data = await searchAndPaginate<assignJobs>(
+    prisma.assignJobs,
+    [],
+    page,
+    limit,
+    searchQuery,
+    additionalFilter,
+    {
+      select: {
+        id: true,
+        job: {
+          select: {
+            id: true,
+            customerName: true,
+
+            serviceName: true,
+            location: true,
+            scheduleTime: true,
+            status: true,
+            description: true,
+          },
+        },
+        technicion: {
+          select: {
+            fullName: true,
+            id: true,
+          },
+        },
+      },
+    }
+  );
+
+  return data;
+};
+
 export const jobService = {
   getTechnicionJob,
   removedeclineJobs,
   updateAssignJobStatus,
+  getIncomingJob,
 };
